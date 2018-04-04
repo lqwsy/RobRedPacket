@@ -37,7 +37,7 @@ public class RobRedPacketService extends AccessibilityService {
 
         int eventType = event.getEventType();
         CharSequence eventClassName = event.getClassName();
-        logInfo(eventClassName.toString());
+        logInfo("eventClassName === "+eventClassName.toString());
 
         switch (eventType){
             case AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED:
@@ -83,7 +83,7 @@ public class RobRedPacketService extends AccessibilityService {
                     AccessibilityNodeInfo nodeInfo = getRootInActiveWindow();
                     robRedPacket(nodeInfo);
                 }
-                if("com.tencent.mm.plugin.luckymoney.ui.LuckyMoneyDetailUI".equals(eventClassName)){
+                if(isClickRedPacket && "com.tencent.mm.plugin.luckymoney.ui.LuckyMoneyDetailUI".equals(eventClassName)){
                     turnBack();
                 }
                 break;
@@ -127,6 +127,7 @@ public class RobRedPacketService extends AccessibilityService {
     private void robRedPacket(AccessibilityNodeInfo nodeInfo){
         logInfo("打开红包");
         for(int i=0;i<nodeInfo.getChildCount();i++){
+            logInfo("抢红包className === "+nodeInfo.getChild(i).getClassName());
             AccessibilityNodeInfo nodeInfoChild = nodeInfo.getChild(i);
             if ("android.widget.Button".equals(nodeInfoChild.getClassName())){
                 nodeInfoChild.performAction(AccessibilityNodeInfo.ACTION_CLICK);//点击开按钮打开红包
@@ -139,15 +140,12 @@ public class RobRedPacketService extends AccessibilityService {
      * 从红包详情页返回
      * */
     private void turnBack(){
-        logInfo("从红包详情页返回");
-        AccessibilityNodeInfo accessibilityNodeInfo = getRootInActiveWindow();
-        if(accessibilityNodeInfo!=null){
-            for(int i=0;i<accessibilityNodeInfo.getChildCount();i++){
-                AccessibilityNodeInfo nodeInfo = accessibilityNodeInfo.getChild(i);
-                logInfo("红包详情页==="+nodeInfo.getClassName().toString());
-                if("android.widget.ImageView".equals(nodeInfo.getClassName())){
-                    nodeInfo.performAction(AccessibilityNodeInfo.ACTION_CLICK);//点击返回
-                }
+        List<AccessibilityNodeInfo> nodeInfoList = getRootInActiveWindow().findAccessibilityNodeInfosByViewId("com.tencent.mm:id/hx");
+        for(int j=nodeInfoList.size()-1;j>=0;j--){
+            if(nodeInfoList.get(j).isClickable()){
+                logInfo("红包详情页点击返回");
+                isClickRedPacket = false;
+                nodeInfoList.get(j).performAction(AccessibilityNodeInfo.ACTION_CLICK);
             }
         }
     }
@@ -160,6 +158,7 @@ public class RobRedPacketService extends AccessibilityService {
     @Override
     protected void onServiceConnected() {
         super.onServiceConnected();
+        logInfo("系统链接服务成功");
     }
 
     /**
