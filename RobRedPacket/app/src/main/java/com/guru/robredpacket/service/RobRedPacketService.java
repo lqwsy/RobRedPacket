@@ -78,7 +78,7 @@ public class RobRedPacketService extends AccessibilityService {
                 }
                 //红包详情页
                 if (isOpenRPDetail && Constants.LUCKY_MONEY_DETAIL.equals(eventClassName)) {
-                    turnBack();
+                    clickBackKey();
                 }
                 break;
             case AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED:
@@ -89,7 +89,7 @@ public class RobRedPacketService extends AccessibilityService {
                     robRedPacket(nodeInfo);
                 }
                 if(isOpenRPDetail && Constants.LUCKY_MONEY_DETAIL.equals(eventClassName)){
-                    turnBack();
+                    clickBackKey();
                 }
                 break;
             default:
@@ -145,7 +145,7 @@ public class RobRedPacketService extends AccessibilityService {
     /**
      * 从红包详情页返回
      * */
-    private void turnBack(){
+    /*private void turnBack(){
         List<AccessibilityNodeInfo> nodeInfoList = getRootInActiveWindow().findAccessibilityNodeInfosByViewId(Constants.LUCKY_MONYE_DETAIL_BACK_ID);
         for(int j=nodeInfoList.size()-1;j>=0;j--){
             if(nodeInfoList.get(j).isClickable()){
@@ -155,7 +155,19 @@ public class RobRedPacketService extends AccessibilityService {
                 nodeInfoList.get(j).performAction(AccessibilityNodeInfo.ACTION_CLICK);
             }
         }
+    }*/
+
+    /**
+     * 全局返回键
+     * */
+    public boolean clickBackKey() {
+        logInfo("全局返回按钮");
+        isClickRedPacket = false;
+        isOpenRPDetail = false;
+        return performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK);
     }
+
+
 
 
     /**
