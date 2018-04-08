@@ -8,6 +8,8 @@ import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 
+import com.guru.robredpacket.util.Constants;
+
 import java.util.List;
 
 /**
@@ -20,6 +22,7 @@ public class RobRedPacketService extends AccessibilityService {
 
     private boolean isNotiChatPage = false;//从通知栏跳转到聊天页面
     private boolean isClickRedPacket = false;//是否点击待领红包
+    private boolean isOpenRPDetail = false;//是否进入红包详情页
 
 
     /**
@@ -64,26 +67,28 @@ public class RobRedPacketService extends AccessibilityService {
                 //处理从通知栏跳转到聊天页面的红包
                 if(isNotiChatPage){
                     //判断当前是否是微信聊天页面
-                    if("com.tencent.mm.ui.LauncherUI".equals(eventClassName)){
+                    if(Constants.WEI_CHAT_PAGE.equals(eventClassName)){
                         clickRedPacket();
                     }
                 }
-                if(isClickRedPacket && "com.tencent.mm.plugin.luckymoney.ui.LuckyMoneyReceiveUI".equals(eventClassName)){
+                //点开了红包，点击开按钮拆红包
+                if(isClickRedPacket && Constants.LUCKY_MONEY_RECEIVE.equals(eventClassName)){
                     AccessibilityNodeInfo nodeInfo = getRootInActiveWindow();
                     robRedPacket(nodeInfo);
                 }
-                if("com.tencent.mm.plugin.luckymoney.ui.LuckyMoneyDetailUI".equals(eventClassName)){
+                //红包详情页
+                if (isOpenRPDetail && Constants.LUCKY_MONEY_DETAIL.equals(eventClassName)) {
                     turnBack();
                 }
                 break;
             case AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED:
                 logInfo("内容改变监听");
                 clickRedPacket();
-                if(isClickRedPacket && "com.tencent.mm.plugin.luckymoney.ui.LuckyMoneyReceiveUI".equals(eventClassName)){
+                if(isClickRedPacket && Constants.LUCKY_MONEY_RECEIVE.equals(eventClassName)){
                     AccessibilityNodeInfo nodeInfo = getRootInActiveWindow();
                     robRedPacket(nodeInfo);
                 }
-                if(isClickRedPacket && "com.tencent.mm.plugin.luckymoney.ui.LuckyMoneyDetailUI".equals(eventClassName)){
+                if(isOpenRPDetail && Constants.LUCKY_MONEY_DETAIL.equals(eventClassName)){
                     turnBack();
                 }
                 break;
@@ -106,7 +111,7 @@ public class RobRedPacketService extends AccessibilityService {
             if(nodeInfoList.size()!=0){
                 logInfo("找到领取红包节点 个数为"+nodeInfoList.size());
                 for(int i=nodeInfoList.size()-1;i>=0;i--){
-                    logInfo("className===" + nodeInfoList.get(i).getClassName());
+                    logInfo("className === " + nodeInfoList.get(i).getClassName());
                     if("android.widget.TextView".equals(nodeInfoList.get(i).getClassName())){
                         AccessibilityNodeInfo nodeInfo = nodeInfoList.get(i);
                         if (nodeInfo!=null){
@@ -134,17 +139,19 @@ public class RobRedPacketService extends AccessibilityService {
             }
             robRedPacket(nodeInfoChild);
         }
+        isOpenRPDetail = true;
     }
 
     /**
      * 从红包详情页返回
      * */
     private void turnBack(){
-        List<AccessibilityNodeInfo> nodeInfoList = getRootInActiveWindow().findAccessibilityNodeInfosByViewId("com.tencent.mm:id/hx");
+        List<AccessibilityNodeInfo> nodeInfoList = getRootInActiveWindow().findAccessibilityNodeInfosByViewId(Constants.LUCKY_MONYE_DETAIL_BACK_ID);
         for(int j=nodeInfoList.size()-1;j>=0;j--){
             if(nodeInfoList.get(j).isClickable()){
                 logInfo("红包详情页点击返回");
                 isClickRedPacket = false;
+                isOpenRPDetail = false;
                 nodeInfoList.get(j).performAction(AccessibilityNodeInfo.ACTION_CLICK);
             }
         }
